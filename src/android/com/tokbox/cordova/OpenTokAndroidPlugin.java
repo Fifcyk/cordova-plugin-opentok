@@ -32,7 +32,7 @@ import com.opentok.android.Stream;
 import com.opentok.android.Subscriber;
 import com.opentok.android.SubscriberKit;
 
-import com.rollerr.videoview.VideoView;
+// import com.rollerr.videoview.VideoView;
 
 
 public class OpenTokAndroidPlugin extends CordovaPlugin implements 
