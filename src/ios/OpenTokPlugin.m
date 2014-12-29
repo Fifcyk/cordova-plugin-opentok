@@ -6,6 +6,7 @@
 //
 
 #import "OpentokPlugin.h"
+#import <roller-Swift.h>
 
 @implementation OpenTokPlugin{
     OTSession* _session;
@@ -15,9 +16,65 @@
     NSMutableDictionary *connectionDictionary;
     NSMutableDictionary *streamDictionary;
     NSMutableDictionary *callbackList;
+
+    VideoView *videoView;
+    BOOL videoPlaying;
 }
 
 @synthesize exceptionId;
+
+// Added by Devin Andrews
+-(CDVPlugin*) initWithWebView:(UIWebView *)theWebView {
+    
+//    theWebView.backgroundColor = [UIColor clearColor];
+//    [theWebView setOpaque:NO];
+//    theWebView.superview.backgroundColor = [UIColor clearColor];
+//    [theWebView.superview setOpaque:NO];
+    
+    self = (OpenTokPlugin*)[super initWithWebView:theWebView];
+    
+//    self.webView.superview.backgroundColor = [UIColor clearColor];
+//    [self.webView.superview setOpaque:NO];
+//    self.webView.backgroundColor = [UIColor clearColor];
+//    [self.webView setOpaque:NO];
+//    
+//    [self.webView setNeedsDisplay];
+//    [self.webView setNeedsLayout];
+//    
+//    [self.webView.superview setNeedsDisplay];
+//    [self.webView.superview setNeedsLayout];
+    
+    return self;
+}
+
+-(void) startVideo:(CDVInvokedUrlCommand*)command {
+    NSLog(@"startVideo()");
+    
+    videoPlaying = NO;
+    NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
+    for (CALayer *layer in sublayers) {
+        if([layer.name isEqualToString:@"VideoView"]) {
+            videoPlaying = YES;
+        }
+    }
+    
+    if(videoPlaying == NO) {
+        videoView = [[VideoView alloc] init];
+        [videoView getVideo:self.webView];
+    }
+}
+
+-(void) stopVideo:(CDVInvokedUrlCommand*)command {
+    NSLog(@"stopVideo()");
+    NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
+    for (CALayer *layer in sublayers) {
+        if([layer.name isEqualToString:@"VideoView"]) {
+            [layer removeFromSuperlayer];
+        }
+    }
+}
+
+// end added by Devin Andrews
 
 #pragma mark -
 #pragma mark Cordova Methods
@@ -42,6 +99,10 @@
 
 // Called by TB.initsession()
 -(void)initSession:(CDVInvokedUrlCommand*)command{
+//    VideoView *videoView = [[VideoView alloc] init];
+//    [videoView stopRunning];
+//    NSLog(@"subviews count: %@ ", self.webView.layer);
+    
     // Get Parameters
     NSString* apiKey = [command.arguments objectAtIndex:0];
     NSString* sessionId = [command.arguments objectAtIndex:1];
@@ -86,8 +147,14 @@
     _publisher = [[OTPublisher alloc] initWithDelegate:self name:name];
     [_publisher setPublishAudio:bpubAudio];
     [_publisher setPublishVideo:bpubVideo];
-    [self.webView.superview addSubview:_publisher.view];
+    
     [_publisher.view setFrame:CGRectMake(left, top, width, height)];
+    
+    //    [self.webView.superview addSubview:_publisher.view];
+    [self.webView.superview insertSubview:_publisher.view atIndex:0];
+    self.webView.layer.zPosition = 3;
+
+    
     if (zIndex>0) {
         _publisher.view.layer.zPosition = zIndex;
     }

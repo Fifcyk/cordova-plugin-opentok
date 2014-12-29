@@ -32,6 +32,8 @@ import com.opentok.android.Stream;
 import com.opentok.android.Subscriber;
 import com.opentok.android.SubscriberKit;
 
+import com.rollerr.videoview.VideoView;
+
 
 public class OpenTokAndroidPlugin extends CordovaPlugin implements 
   Session.SessionListener, Session.ConnectionListener, Session.SignalListener, 
@@ -62,6 +64,10 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
     public class CustomComparator implements Comparator<RunnableUpdateViews> {
       @Override
         public int compare(RunnableUpdateViews object1, RunnableUpdateViews object2) {
+        Log.d(TAG, "CustomComparator begin:");
+        Log.d(TAG, object1.toString());
+        Log.d(TAG, object2.toString());
+        Log.d(TAG, "CustomComparator end;");
           return object2.getZIndex() - object1.getZIndex();
         }
     }
@@ -75,14 +81,30 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
         allStreamViews.add( myPublisher ); 
       }
       Collections.sort( allStreamViews, new CustomComparator() );
-
+      
+      Log.d(TAG, "updateZIndeces()");
+      Log.d(TAG, allStreamViews.toString());
+      
       for( RunnableUpdateViews viewContainer : allStreamViews ){
         ViewGroup parent = (ViewGroup) cordova.getActivity().findViewById(android.R.id.content);
         if (null != parent) {
+          Log.d(TAG, "Parent exists:");
+          Log.d(TAG, parent.toString());
+          Log.d(TAG, viewContainer.mView.toString());
+          Log.d(TAG, "parent exists end;");
           parent.removeView( viewContainer.mView );
-          parent.addView(viewContainer.mView );
+          parent.addView(viewContainer.mView, 0 );
         }
+        
+        parent.setBackgroundColor(0x00000000);
+        parent.getChildAt(1).setBackgroundColor(0x00000000);
+        
+        Log.d(TAG, "check position in parent:");
+        Log.d(TAG, parent.getChildAt(0).toString());
+        Log.d(TAG, parent.getChildAt(1).toString());
+        Log.d(TAG, "end check parent");
       }
+      
     }
 
     public int getZIndex(){
@@ -155,9 +177,14 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
 
 
     public void destroyPublisher(){
+      if(this.mPublisher==null) return;
       ViewGroup parent = (ViewGroup) cordova.getActivity().findViewById(android.R.id.content);
         parent.removeView( this.mView );
-        this.mPublisher.destroy();
+        try {
+          this.mPublisher.destroy(); //crashes
+        } catch(Exception e) {
+          Log.d(TAG, "Error on mPublisher.destroy(): " + e.toString());
+        }
         this.mPublisher = null;
     }
     
@@ -175,6 +202,16 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
         mPublisher = new Publisher(cordova.getActivity().getApplicationContext(), publisherName);
         mPublisher.setCameraListener(this);
         mPublisher.setPublisherListener(this);
+        
+        try{
+          if( compareStrings(this.mProperty.getString(8), "back") ){
+            Log.i(TAG, "swapping camera");
+            mPublisher.swapCamera(); // default is front
+          }
+        }catch(Exception e){
+          Log.i(TAG, "error when trying to retrieve cameraName property");
+        }
+
         try{
           // Camera is swapped in streamCreated event
           if( compareStrings(this.mProperty.getString(7), "false") ){
@@ -188,7 +225,16 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
           Log.i(TAG, "error when trying to retrieve publish audio/video property");
         }
         this.mView = mPublisher.getView();
-        frame.addView( this.mView );
+        
+        Log.d(TAG, "Well?");
+        Log.d(TAG, frame.toString());
+        Log.d(TAG, new Integer(frame.getChildCount()).toString());
+        frame.addView( this.mView, 0 );
+        
+        Log.d(TAG, new Integer(frame.getChildCount()).toString());
+        
+        Log.d(TAG, frame.getChildAt(0).toString());
+//        Log.d(TAG, frame.getChildAt(1).toString());
         mSession.publish(mPublisher);
       }
       super.run();
@@ -204,14 +250,16 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
     @Override
     public void onStreamCreated(PublisherKit arg0, Stream arg1) {
       Log.i(TAG, "publisher stream received");
-      try{
-        if( compareStrings(this.mProperty.getString(8), "back") ){
-          Log.i(TAG, "swapping camera");
-          mPublisher.swapCamera(); // default is front
-        }
-      }catch(Exception e){
-        Log.i(TAG, "error when trying to retrieve cameraName property");
-      }
+      // Edited by Devin Andrews
+      // We want the stream to initialize with this value
+      // try{
+      //   if( compareStrings(this.mProperty.getString(8), "back") ){
+      //     Log.i(TAG, "swapping camera");
+      //     mPublisher.swapCamera(); // default is front
+      //   }
+      // }catch(Exception e){
+      //   Log.i(TAG, "error when trying to retrieve cameraName property");
+      // }
       streamCollection.put(arg1.getStreamId(), arg1);
       triggerStreamCreated( arg1, "publisherEvents");
     }
@@ -358,7 +406,12 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
           Log.e(TAG, "Critical error. Failed to retrieve Cordova's view");
         }
       }
-
+      Log.d(TAG, "So yeah:");
+      Log.d(TAG, webView.toString());
+      Log.d(TAG, webView.getParent().toString());
+      Log.d(TAG, webView.getParent().getParent().toString());
+      
+      
       // set OpenTok states
       publishCalled = false;
       sessionConnected = false;
@@ -366,15 +419,23 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
       connectionCollection = new HashMap<String, Connection>();
       streamCollection = new HashMap<String, Stream>();
       subscriberCollection = new HashMap<String, RunnableSubscriber>();
-
+      
       super.initialize(cordova, webView);
     }
 
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
       Log.i( TAG, action );
+      
+      // Added by Devin Andrews
+      if(action.equals("startCamera")) {
+        Log.d(TAG, "startCamera called");
+      } else if (action.equals("stopCamera")) { 
+        Log.d(TAG, "stopCamera called");
+      }
+      // end Added by Devin Andrews
       // TB Methods
-      if( action.equals("initPublisher")){
+      else if( action.equals("initPublisher")){
         myPublisher = new RunnablePublisher( args );
       }else if( action.equals( "destroyPublisher" )){
       if( myPublisher != null ){
