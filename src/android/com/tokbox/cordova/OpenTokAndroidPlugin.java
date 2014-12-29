@@ -80,7 +80,7 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
         ViewGroup parent = (ViewGroup) cordova.getActivity().findViewById(android.R.id.content);
         if (null != parent) {
           parent.removeView( viewContainer.mView );
-          parent.addView(viewContainer.mView, 0 );
+          parent.addView(viewContainer.mView );
         }
       }
     }
@@ -175,16 +175,6 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
         mPublisher = new Publisher(cordova.getActivity().getApplicationContext(), publisherName);
         mPublisher.setCameraListener(this);
         mPublisher.setPublisherListener(this);
-        
-        try{
-          if( compareStrings(this.mProperty.getString(8), "back") ){
-            Log.i(TAG, "swapping camera");
-            mPublisher.swapCamera(); // default is front
-          }
-        }catch(Exception e){
-          Log.i(TAG, "error when trying to retrieve cameraName property");
-        }
-
         try{
           // Camera is swapped in streamCreated event
           if( compareStrings(this.mProperty.getString(7), "false") ){
@@ -198,7 +188,7 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
           Log.i(TAG, "error when trying to retrieve publish audio/video property");
         }
         this.mView = mPublisher.getView();
-        frame.addView( this.mView, 0 );
+        frame.addView( this.mView );
         mSession.publish(mPublisher);
       }
       super.run();
@@ -214,16 +204,14 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
     @Override
     public void onStreamCreated(PublisherKit arg0, Stream arg1) {
       Log.i(TAG, "publisher stream received");
-      // Edited by Devin Andrews
-      // We want the stream to initialize with this value
-      // try{
-      //   if( compareStrings(this.mProperty.getString(8), "back") ){
-      //     Log.i(TAG, "swapping camera");
-      //     mPublisher.swapCamera(); // default is front
-      //   }
-      // }catch(Exception e){
-      //   Log.i(TAG, "error when trying to retrieve cameraName property");
-      // }
+      try{
+        if( compareStrings(this.mProperty.getString(8), "back") ){
+          Log.i(TAG, "swapping camera");
+          mPublisher.swapCamera(); // default is front
+        }
+      }catch(Exception e){
+        Log.i(TAG, "error when trying to retrieve cameraName property");
+      }
       streamCollection.put(arg1.getStreamId(), arg1);
       triggerStreamCreated( arg1, "publisherEvents");
     }

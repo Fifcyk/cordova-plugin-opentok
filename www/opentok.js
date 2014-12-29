@@ -47,12 +47,6 @@ window.OT = {
   },
   removeEventListener: function(type, handler) {
     return this.off(type, handler);
-  },
-  startVideo: function (success) {
-    return Cordova.exec(success, TBError, OTPlugin, "startVideo", []);
-  },
-  stopVideo: function (success) {
-    return Cordova.exec(success, TBError, OTPlugin, "stopVideo", []);
   }
 };
 
