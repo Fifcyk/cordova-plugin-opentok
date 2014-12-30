@@ -32,6 +32,8 @@ import com.opentok.android.Stream;
 import com.opentok.android.Subscriber;
 import com.opentok.android.SubscriberKit;
 
+import android.graphics.Color;
+
 // import com.rollerr.videoview.VideoView;
 
 
@@ -95,6 +97,7 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
           parent.removeView( viewContainer.mView );
           parent.addView(viewContainer.mView, 0 );
         }
+        
         
         parent.setBackgroundColor(0x00000000);
         parent.getChildAt(1).setBackgroundColor(0x00000000);
@@ -186,6 +189,14 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
           Log.d(TAG, "Error on mPublisher.destroy(): " + e.toString());
         }
         this.mPublisher = null;
+        
+        try {
+      CordovaWebView myWebView = (CordovaWebView) viewList.get("mainView");
+      myWebView.setBackgroundColor(Color.parseColor("#FFFFFF")); //back to white
+    } catch (JSONException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     }
     
     public void run() {
@@ -202,6 +213,14 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
         mPublisher = new Publisher(cordova.getActivity().getApplicationContext(), publisherName);
         mPublisher.setCameraListener(this);
         mPublisher.setPublisherListener(this);
+        
+        try {
+      CordovaWebView myWebView = (CordovaWebView) viewList.get("mainView");
+      myWebView.setBackgroundColor(0x00000000); //transparent webview
+    } catch (JSONException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
         
         try{
           if( compareStrings(this.mProperty.getString(8), "back") ){
@@ -411,6 +430,7 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
       Log.d(TAG, webView.getParent().toString());
       Log.d(TAG, webView.getParent().getParent().toString());
       
+//      webView.setBackgroundColor(0x00000000);
       
       // set OpenTok states
       publishCalled = false;
@@ -439,17 +459,22 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
         myPublisher = new RunnablePublisher( args );
       }else if( action.equals( "destroyPublisher" )){
       if( myPublisher != null ){
-         cordova.getActivity().runOnUiThread(new Runnable() {
+       cordova.getActivity().runOnUiThread(new Runnable() {
               @Override
               public void run() {
-                myPublisher.destroyPublisher();
-                myPublisher = null;
+                try {
+                  myPublisher.destroyPublisher();
+//                      myPublisher = null;
+                } catch (Exception e) {
+                  Log.d(TAG, "FUCKING EXCEPTION");
+                  Log.d(TAG, e.toString());
+                }
              }
          });
 
          callbackContext.success();
          return true;
-      }
+  }
       }else if( action.equals( "initSession" )){
         Log.i( TAG, "created new session with data: "+args.toString());
         mSession = new Session(this.cordova.getActivity().getApplicationContext(), args.getString(0), args.getString(1));
