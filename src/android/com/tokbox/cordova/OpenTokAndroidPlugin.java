@@ -33,6 +33,10 @@ import com.opentok.android.Subscriber;
 import com.opentok.android.SubscriberKit;
 
 import android.graphics.Color;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
+import android.view.Display;
+import android.widget.RelativeLayout;
 
 // import com.rollerr.videoview.VideoView;
 
@@ -89,18 +93,30 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
       
       for( RunnableUpdateViews viewContainer : allStreamViews ){
         ViewGroup parent = (ViewGroup) cordova.getActivity().findViewById(android.R.id.content);
+        
+        RelativeLayout layout = new RelativeLayout(cordova.getActivity().getApplicationContext());
+        parent.addView(layout, 0);
+        
         if (null != parent) {
           Log.d(TAG, "Parent exists:");
           Log.d(TAG, parent.toString());
           Log.d(TAG, viewContainer.mView.toString());
           Log.d(TAG, "parent exists end;");
           parent.removeView( viewContainer.mView );
-          parent.addView(viewContainer.mView, 0 );
+          parent.addView(viewContainer.mView, 1 );
+//          layout.removeView(viewContainer.mView);
+//          layout.addView(viewContainer.mView, 0);
         }
         
+        Log.d(TAG, parent.toString());
+        Log.d(TAG, parent.getChildAt(0).toString());
+        Log.d(TAG, parent.getChildAt(1).toString());
+        Log.d(TAG, parent.getChildAt(2).toString());
         
+//        layout.setBackgroundColor(0x00000000);
+//        layout.getChildAt(1).setBackgroundColor(0x00000000);
         parent.setBackgroundColor(0x00000000);
-        parent.getChildAt(1).setBackgroundColor(0x00000000);
+        parent.getChildAt(2).setBackgroundColor(0x00000000);
         
         Log.d(TAG, "check position in parent:");
         Log.d(TAG, parent.getChildAt(0).toString());
@@ -139,12 +155,19 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
 
           widthRatio = (float) mProperty.getDouble(ratioIndex);
           heightRatio = (float) mProperty.getDouble(ratioIndex + 1);
-
-          mView.setY( mProperty.getInt(1) * heightRatio );
-          mView.setX( mProperty.getInt(2) * widthRatio );
+          
+          WindowManager wm = (WindowManager) cordova.getActivity().getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+          Display display = wm.getDefaultDisplay();
+          int width = display.getWidth();  // deprecated
+          int height = display.getHeight();  // deprecated
+          
+//          mView.setY( mProperty.getInt(1) * heightRatio );
+//          mView.setX( mProperty.getInt(2) * widthRatio );
           ViewGroup.LayoutParams params = mView.getLayoutParams();
-          params.height = (int) (mProperty.getInt(4) * heightRatio);
-          params.width = (int) (mProperty.getInt(3) * widthRatio);
+//          params.height = (int) (mProperty.getInt(4) * heightRatio);
+//          params.width = (int) (mProperty.getInt(3) * widthRatio);
+          params.height = (int) height;
+          params.width = (int) width;
           mView.setLayoutParams(params);
           updateZIndices();
         }catch( Exception e ){
@@ -224,7 +247,9 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
         
         try{
           if( compareStrings(this.mProperty.getString(8), "back") ){
-            Log.i(TAG, "swapping camera");
+            Log.i(TAG, "swapping camer"
+                + ""
+                + "a");
             mPublisher.swapCamera(); // default is front
           }
         }catch(Exception e){
@@ -323,19 +348,36 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
       ViewGroup frame = (ViewGroup) cordova.getActivity().findViewById(android.R.id.content);
       frame.removeView( this.mView );
       mSubscriber.destroy();
+      
+      Log.d(TAG, "removeStreamView()");
+      try {
+      CordovaWebView myWebView = (CordovaWebView) viewList.get("mainView");
+      myWebView.setBackgroundColor(Color.parseColor("#FFFFFF")); //back to white
+    } catch (JSONException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     }
 
     public void run() {
       if( mSubscriber == null ){
+      try {
+        CordovaWebView myWebView = (CordovaWebView) viewList.get("mainView");
+        myWebView.setBackgroundColor(0x00000000); //transparent webview
+      } catch (JSONException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
         logMessage("NEW SUBSCRIBER BEING CREATED");
         mSubscriber = new Subscriber(cordova.getActivity(), mStream);
         mSubscriber.setVideoListener(this);
         mSubscriber.setSubscriberListener(this);
         ViewGroup frame = (ViewGroup) cordova.getActivity().findViewById(android.R.id.content);
         this.mView = mSubscriber.getView();
-        frame.addView( this.mView );
+        frame.addView( this.mView, 0 );
         mSession.subscribe(mSubscriber);
         Log.i(TAG, "subscriber view is added to parent view!");
+        
       }
       super.run();
     }

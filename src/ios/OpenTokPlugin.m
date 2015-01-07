@@ -178,18 +178,20 @@
     int zIndex = [[command.arguments objectAtIndex:5] intValue];
     if ([sid isEqualToString:@"TBPublisher"]) {
         NSLog(@"The Width is: %d", width);
+        NSLog(@"WDAWNDAWDJKWAD");
         _publisher.view.frame = CGRectMake(left, top, width, height);
+//        [_publisher.view setFrame:CGRectMake(left, top, width, height)];
         _publisher.view.layer.zPosition = zIndex;
     }
     
     // Pulls the subscriber object from dictionary to prepare it for update
-    OTSubscriber* streamInfo = [subscriberDictionary objectForKey:sid];
-    
-    if (streamInfo) {
-        // Reposition the video feeds!
-        streamInfo.view.frame = CGRectMake(left, top, width, height);
-        streamInfo.view.layer.zPosition = zIndex;
-    }
+//    OTSubscriber* streamInfo = [subscriberDictionary objectForKey:sid];
+//    
+//    if (streamInfo) {
+//        // Reposition the video feeds!
+//        streamInfo.view.frame = CGRectMake(left, top, width, height);
+//        streamInfo.view.layer.zPosition = zIndex;
+//    }
     
     CDVPluginResult* callbackResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [callbackResult setKeepCallbackAsBool:YES];
@@ -303,7 +305,9 @@
     if (zIndex>0) {
         sub.view.layer.zPosition = zIndex;
     }
-    [self.webView.superview addSubview:sub.view];
+//    [self.webView.superview addSubview:sub.view];
+    [self.webView.superview insertSubview:sub.view atIndex:0];
+    self.webView.layer.zPosition = 3;
     
     // Return to JS event handler
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
