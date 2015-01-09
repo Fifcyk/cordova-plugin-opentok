@@ -10,7 +10,7 @@ import Foundation
 import UIKit
 import AVFoundation
 
-public class Video : NSObject {
+public @objc(Video) class VideoView : NSObject {
     
     var captureSession = AVCaptureSession()
     var previewLayer : AVCaptureVideoPreviewLayer?
