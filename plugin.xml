@@ -44,9 +44,9 @@
       <asset src="www/opentok.js" target="opentok.js" />
 
       <header-file src="src/ios/OpenTokPlugin.h" />
-      <header-file src="src/ios/OpenTokPlugin-Swift.h" />
+      <!-- <header-file src="src/ios/OpenTokPlugin-Swift.h" /> -->
       <source-file src="src/ios/OpenTokPlugin.m" />
-      <source-file src="src/ios//VideoView.swift" />
+      <!-- <source-file src="src/ios//VideoView.swift" /> -->
 
       <framework src="src/ios/Opentok.framework" custom="true" />
       <framework src="Foundation.framework" />
