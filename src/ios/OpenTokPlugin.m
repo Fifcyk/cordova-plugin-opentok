@@ -6,7 +6,7 @@
 //
 
 #import "OpentokPlugin.h"
-#import "OpenTokPlugin-Swift.h"
+// #import "OpenTokPlugin-Swift.h"
 
 @implementation OpenTokPlugin{
     OTSession* _session;
@@ -17,7 +17,7 @@
     NSMutableDictionary *streamDictionary;
     NSMutableDictionary *callbackList;
 
-   VideoView *videoView;
+   // VideoView *videoView;
     BOOL videoPlaying;
 }
 
@@ -50,28 +50,28 @@
 -(void) startVideo:(CDVInvokedUrlCommand*)command {
     NSLog(@"startVideo()");
     
-   videoPlaying = NO;
-   NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
-   for (CALayer *layer in sublayers) {
-       if([layer.name isEqualToString:@"VideoView"]) {
-           videoPlaying = YES;
-       }
-   }
+   // videoPlaying = NO;
+   // NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
+   // for (CALayer *layer in sublayers) {
+   //     if([layer.name isEqualToString:@"VideoView"]) {
+   //         videoPlaying = YES;
+   //     }
+   // }
    
-   if(videoPlaying == NO) {
-       videoView = [[VideoView alloc] init];
-       [videoView getVideo:self.webView];
-   }
+   // if(videoPlaying == NO) {
+   //     videoView = [[VideoView alloc] init];
+   //     [videoView getVideo:self.webView];
+   // }
 }
 
 -(void) stopVideo:(CDVInvokedUrlCommand*)command {
     NSLog(@"stopVideo()");
-    NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
-    for (CALayer *layer in sublayers) {
-        if([layer.name isEqualToString:@"VideoView"]) {
-            [layer removeFromSuperlayer];
-        }
-    }
+    // NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
+    // for (CALayer *layer in sublayers) {
+    //     if([layer.name isEqualToString:@"VideoView"]) {
+    //         [layer removeFromSuperlayer];
+    //     }
+    // }
 }
 
 // end added by Devin Andrews
