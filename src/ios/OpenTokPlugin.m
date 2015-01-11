@@ -75,17 +75,6 @@
     
 }
 
--(void) stopVideo:(CDVInvokedUrlCommand*)command {
-    NSLog(@"stopVideo()");
-    // NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
-    // for (CALayer *layer in sublayers) {
-    //     if([layer.name isEqualToString:@"VideoView"]) {
-    //         [layer removeFromSuperlayer];
-    //     }
-    // }
-    
-}
-
 -(void) getImgData:(CDVInvokedUrlCommand*)command {
     NSLog(@"getImgData()");
     UIGraphicsBeginImageContext(_publisher.view.frame.size);
@@ -93,10 +82,10 @@
     UIImage *screenshot = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
-    NSData *imageData = UIImagePNGRepresentation(screenshot, 1.0);
+    NSData *imageData = UIImagePNGRepresentation(screenshot);
     NSString *encodedString = [imageData base64Encoding];
     
-    NGLog(@"My encoded string:");
+    NSLog(@"My encoded string:");
     NSLog(encodedString);
     // NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
     // for (CALayer *layer in sublayers) {

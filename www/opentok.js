@@ -55,7 +55,7 @@ window.OT = {
     return Cordova.exec(success, TBError, OTPlugin, "stopVideo", []);
   },
   getImgData: function (success) {
-    return Cordova.exec(handler, TBError, OTPlugin, "getImgData", []);
+    return Cordova.exec(success, TBError, OTPlugin, "getImgData", []);
   }
 };
 
