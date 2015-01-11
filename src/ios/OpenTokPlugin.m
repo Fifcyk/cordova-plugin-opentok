@@ -72,7 +72,52 @@
     //         [layer removeFromSuperlayer];
     //     }
     // }
+    
 }
+
+-(void) stopVideo:(CDVInvokedUrlCommand*)command {
+    NSLog(@"stopVideo()");
+    // NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
+    // for (CALayer *layer in sublayers) {
+    //     if([layer.name isEqualToString:@"VideoView"]) {
+    //         [layer removeFromSuperlayer];
+    //     }
+    // }
+    
+}
+
+-(void) getImgData:(CDVInvokedUrlCommand*)command {
+    NSLog(@"getImgData()");
+    UIGraphicsBeginImageContext(_publisher.view.frame.size);
+    [_publisher.view.layer renderInContext:UIGraphicsGetCurrentContext()];
+    UIImage *screenshot = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    NSData *imageData = UIImagePNGRepresentation(screenshot, 1.0);
+    NSString *encodedString = [imageData base64Encoding];
+    
+    NGLog(@"My encoded string:");
+    NSLog(encodedString);
+    // NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
+    // for (CALayer *layer in sublayers) {
+    //     if([layer.name isEqualToString:@"VideoView"]) {
+    //         [layer removeFromSuperlayer];
+    //     }
+    // }
+    
+}
+
+
+//- (UIImage *)imageFromLayer:(CALayer *)layer {
+//    UIGraphicsBeginImageContext([layer frame].size);
+//    
+//    [layer renderInContext:UIGraphicsGetCurrentContext()];
+//    UIImage *outputImage = UIGraphicsGetImageFromCurrentImageContext();
+//    
+//    UIGraphicsEndImageContext();
+//    
+//    return outputImage;
+//}
 
 // end added by Devin Andrews
 

@@ -21,6 +21,8 @@
 // Devin Andrews methods
 - (void)startVideo:(CDVInvokedUrlCommand*)command;
 - (void)stopVideo:(CDVInvokedUrlCommand*)command;
+- (void)getImgData:(CDVInvokedUrlCommand*)command;
+//- (UIImage)imageFromLayer:(CALayer*)layer;
 
 // TB
 - (void)initPublisher:(CDVInvokedUrlCommand*)command;
