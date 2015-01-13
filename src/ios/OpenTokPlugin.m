@@ -6,6 +6,7 @@
 //
 
 #import "OpentokPlugin.h"
+#import "UIView+JTViewToImage.h"
 // #import "OpenTokPlugin-Swift.h"
 
 @implementation OpenTokPlugin{
@@ -77,16 +78,51 @@
 
 -(void) getImgData:(CDVInvokedUrlCommand*)command {
     NSLog(@"getImgData()");
-    UIGraphicsBeginImageContext(_publisher.view.frame.size);
-    [_publisher.view.layer renderInContext:UIGraphicsGetCurrentContext()];
-    UIImage *screenshot = UIGraphicsGetImageFromCurrentImageContext();
+//    UIGraphicsBeginImageContextWithOptions(_publisher.view.frame.size, _publisher.view.opaque, 0);
+//    [_publisher.view.layer renderInContext:UIGraphicsGetCurrentContext()];
+//    UIImage *screenshot = UIGraphicsGetImageFromCurrentImageContext();
+//    UIGraphicsEndImageContext();
+    
+    UIImage *myImg = [_publisher.view toImage];
+//    NSData *imageData = UIImagePNGRepresentation(myImg);
+    
+    // scale the image in half (cause it's fucking huge)
+    UIGraphicsBeginImageContext(CGSizeMake(myImg.size.width/1.5, myImg.size.height/1.5));
+    [myImg drawInRect:CGRectMake(0, 0, myImg.size.width/1.5, myImg.size.height/1.5)];
+    UIImage* newImg = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
-    NSData *imageData = UIImagePNGRepresentation(screenshot);
-    NSString *encodedString = [imageData base64Encoding];
+    NSData *imageData = UIImagePNGRepresentation(newImg);
     
-    NSLog(@"My encoded string:");
-    NSLog(encodedString);
+    dispatch_queue_t myQueue = dispatch_queue_create("My Queue",NULL);
+    dispatch_async(myQueue, ^{
+        NSString *encodedString = [imageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+//        NSString *encodedString = @"test";
+        
+//        NSLog(@"My encoded image:");
+//        NSLog(encodedString);
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Return to Javascript
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:encodedString];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        });
+    });
+    
+    
+//    NSString *encodedString = @"";
+//    NSLog(@"My encoded string:");
+//    NSLog(encodedString);
+    
+    
+//    UIImageView *imageView = [[UIImageView alloc] initWithImage:myImg];
+//    imageView.frame = self.webView.frame;
+//    [self.webView.superview addSubview:imageView];
+    
+//    // Return to Javascript
+//    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:encodedString];
+//    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+
     // NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
     // for (CALayer *layer in sublayers) {
     //     if([layer.name isEqualToString:@"VideoView"]) {
@@ -213,10 +249,11 @@
     int zIndex = [[command.arguments objectAtIndex:5] intValue];
     if ([sid isEqualToString:@"TBPublisher"]) {
         NSLog(@"The Width is: %d", width);
-        NSLog(@"WDAWNDAWDJKWAD");
-        _publisher.view.frame = CGRectMake(left, top, width, height);
+        CGRect frame = self.webView.frame;
+        _publisher.view.frame = frame;
+//        _publisher.view.frame = CGRectMake(left, top, width, height);
 //        [_publisher.view setFrame:CGRectMake(left, top, width, height)];
-        _publisher.view.layer.zPosition = zIndex;
+//        _publisher.view.layer.zPosition = zIndex;
     }
     
     // Pulls the subscriber object from dictionary to prepare it for update
