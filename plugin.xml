@@ -48,7 +48,7 @@
       <!-- <header-file src="src/ios/OpenTokPlugin-Swift.h" /> -->
       <source-file src="src/ios/UIView+JTViewToImage.m" />
       <source-file src="src/ios/OpenTokPlugin.m" />
-      <source-file src="src/ios//VideoView.swift" />
+      <!-- <source-file src="src/ios//VideoView.swift" /> -->
 
       <framework src="src/ios/Opentok.framework" custom="true" />
       <framework src="Foundation.framework" />
@@ -73,9 +73,9 @@
           <feature name="OpenTokPlugin">
               <param name="ios-package" value="OpenTokPlugin"/>
           </feature>
-          <feature name="Video">
+          <!-- <feature name="Video">
             <param name="ios-package" value="Video" />
-          </feature>
+          </feature> -->
       </config-file>
       <config-file target="config.xml" parent="/*">
         <access origin="*" />
