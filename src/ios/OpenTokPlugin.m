@@ -78,12 +78,13 @@
 
 -(void) getImgData:(CDVInvokedUrlCommand*)command {
     NSLog(@"getImgData()");
-//    UIGraphicsBeginImageContextWithOptions(_publisher.view.frame.size, _publisher.view.opaque, 0);
-//    [_publisher.view.layer renderInContext:UIGraphicsGetCurrentContext()];
-//    UIImage *screenshot = UIGraphicsGetImageFromCurrentImageContext();
-//    UIGraphicsEndImageContext();
     
-    UIImage *myImg = [_publisher.view toImage];
+    UIImage *myImg;
+    if([[command.arguments objectAtIndex:0] isEqualToString:@"subscriber"]) {
+        myImg = [_subscriber.view toImage];
+    } else {
+        myImg = [_publisher.view toImage];
+    }
 //    NSData *imageData = UIImagePNGRepresentation(myImg);
     
     // scale the image in half (cause it's fucking huge)
@@ -108,27 +109,6 @@
             [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
         });
     });
-    
-    
-//    NSString *encodedString = @"";
-//    NSLog(@"My encoded string:");
-//    NSLog(encodedString);
-    
-    
-//    UIImageView *imageView = [[UIImageView alloc] initWithImage:myImg];
-//    imageView.frame = self.webView.frame;
-//    [self.webView.superview addSubview:imageView];
-    
-//    // Return to Javascript
-//    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:encodedString];
-//    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-
-    // NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
-    // for (CALayer *layer in sublayers) {
-    //     if([layer.name isEqualToString:@"VideoView"]) {
-    //         [layer removeFromSuperlayer];
-    //     }
-    // }
     
 }
 

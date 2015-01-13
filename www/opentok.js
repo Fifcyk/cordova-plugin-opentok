@@ -54,8 +54,12 @@ window.OT = {
   stopVideo: function (success) {
     return Cordova.exec(success, TBError, OTPlugin, "stopVideo", []);
   },
-  getImgData: function (success) {
-    return Cordova.exec(success, TBError, OTPlugin, "getImgData", []);
+  getImgData: function (type, success) {
+    if(typeof type !== 'string') {
+      success = type;
+      type = '';
+    }
+    return Cordova.exec(success, TBError, OTPlugin, "getImgData", [type]);
   }
 };
 
