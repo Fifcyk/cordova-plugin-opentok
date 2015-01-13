@@ -6,7 +6,7 @@
 //
 
 #import "OpentokPlugin.h"
-// #import "UIView+JTViewToImage.h"
+#import "UIView+JTViewToImage.h"
 // #import "OpenTokPlugin-Swift.h"
 
 @implementation OpenTokPlugin{
@@ -76,61 +76,61 @@
     
 }
 
-// -(void) getImgData:(CDVInvokedUrlCommand*)command {
-//     NSLog(@"getImgData()");
-// //    UIGraphicsBeginImageContextWithOptions(_publisher.view.frame.size, _publisher.view.opaque, 0);
-// //    [_publisher.view.layer renderInContext:UIGraphicsGetCurrentContext()];
-// //    UIImage *screenshot = UIGraphicsGetImageFromCurrentImageContext();
-// //    UIGraphicsEndImageContext();
+-(void) getImgData:(CDVInvokedUrlCommand*)command {
+    NSLog(@"getImgData()");
+//    UIGraphicsBeginImageContextWithOptions(_publisher.view.frame.size, _publisher.view.opaque, 0);
+//    [_publisher.view.layer renderInContext:UIGraphicsGetCurrentContext()];
+//    UIImage *screenshot = UIGraphicsGetImageFromCurrentImageContext();
+//    UIGraphicsEndImageContext();
     
-//     UIImage *myImg = [_publisher.view toImage];
-// //    NSData *imageData = UIImagePNGRepresentation(myImg);
+    UIImage *myImg = [_publisher.view toImage];
+//    NSData *imageData = UIImagePNGRepresentation(myImg);
     
-//     // scale the image in half (cause it's fucking huge)
-//     UIGraphicsBeginImageContext(CGSizeMake(myImg.size.width/1.5, myImg.size.height/1.5));
-//     [myImg drawInRect:CGRectMake(0, 0, myImg.size.width/1.5, myImg.size.height/1.5)];
-//     UIImage* newImg = UIGraphicsGetImageFromCurrentImageContext();
-//     UIGraphicsEndImageContext();
+    // scale the image in half (cause it's fucking huge)
+    UIGraphicsBeginImageContext(CGSizeMake(myImg.size.width/1.5, myImg.size.height/1.5));
+    [myImg drawInRect:CGRectMake(0, 0, myImg.size.width/1.5, myImg.size.height/1.5)];
+    UIImage* newImg = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
     
-//     NSData *imageData = UIImagePNGRepresentation(newImg);
+    NSData *imageData = UIImagePNGRepresentation(newImg);
     
-//     dispatch_queue_t myQueue = dispatch_queue_create("My Queue",NULL);
-//     dispatch_async(myQueue, ^{
-//         NSString *encodedString = [imageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
-// //        NSString *encodedString = @"test";
+    dispatch_queue_t myQueue = dispatch_queue_create("My Queue",NULL);
+    dispatch_async(myQueue, ^{
+        NSString *encodedString = [imageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+//        NSString *encodedString = @"test";
         
-// //        NSLog(@"My encoded image:");
-// //        NSLog(encodedString);
+//        NSLog(@"My encoded image:");
+//        NSLog(encodedString);
         
-//         dispatch_async(dispatch_get_main_queue(), ^{
-//             // Return to Javascript
-//             CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:encodedString];
-//             [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-//         });
-//     });
+        dispatch_async(dispatch_get_main_queue(), ^{
+            // Return to Javascript
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:encodedString];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+        });
+    });
     
     
-// //    NSString *encodedString = @"";
-// //    NSLog(@"My encoded string:");
-// //    NSLog(encodedString);
+//    NSString *encodedString = @"";
+//    NSLog(@"My encoded string:");
+//    NSLog(encodedString);
     
     
-// //    UIImageView *imageView = [[UIImageView alloc] initWithImage:myImg];
-// //    imageView.frame = self.webView.frame;
-// //    [self.webView.superview addSubview:imageView];
+//    UIImageView *imageView = [[UIImageView alloc] initWithImage:myImg];
+//    imageView.frame = self.webView.frame;
+//    [self.webView.superview addSubview:imageView];
     
-// //    // Return to Javascript
-// //    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:encodedString];
-// //    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+//    // Return to Javascript
+//    CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:encodedString];
+//    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 
-//     // NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
-//     // for (CALayer *layer in sublayers) {
-//     //     if([layer.name isEqualToString:@"VideoView"]) {
-//     //         [layer removeFromSuperlayer];
-//     //     }
-//     // }
+    // NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
+    // for (CALayer *layer in sublayers) {
+    //     if([layer.name isEqualToString:@"VideoView"]) {
+    //         [layer removeFromSuperlayer];
+    //     }
+    // }
     
-// }
+}
 
 
 //- (UIImage *)imageFromLayer:(CALayer *)layer {
