@@ -13,6 +13,7 @@
     OTSession* _session;
     OTPublisher* _publisher;
     OTSubscriber* _subscriber;
+    OTSubscriber* sub;
     NSMutableDictionary *subscriberDictionary;
     NSMutableDictionary *connectionDictionary;
     NSMutableDictionary *streamDictionary;
@@ -80,8 +81,13 @@
     NSLog(@"getImgData()");
     
     UIImage *myImg;
-    if([[command.arguments objectAtIndex:0] isEqualToString:@"subscriber"]) {
-        myImg = [_subscriber.view toImage];
+    NSString *type = [command.arguments objectAtIndex:0];
+    
+    NSLog(@"type is:");
+    NSLog(type);
+    
+    if([type isEqualToString:@"subscriber"]) {
+        myImg = [sub.view toImage];
     } else {
         myImg = [_publisher.view toImage];
     }
@@ -342,7 +348,8 @@
     
     // Acquire Stream, then create a subscriber object and put it into dictionary
     OTStream* myStream = [streamDictionary objectForKey:sid];
-    OTSubscriber* sub = [[OTSubscriber alloc] initWithStream:myStream delegate:self];
+//    OTSubscriber* sub = [[OTSubscriber alloc] initWithStream:myStream delegate:self];
+    sub = [[OTSubscriber alloc] initWithStream:myStream delegate:self];
     [_session subscribe:sub error:nil];
     
     if ([[command.arguments objectAtIndex:6] isEqualToString:@"false"]) {
