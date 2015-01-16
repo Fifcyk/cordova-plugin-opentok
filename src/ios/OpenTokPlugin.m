@@ -21,6 +21,8 @@
 
    // VideoView *videoView;
     BOOL videoPlaying;
+    
+    dispatch_queue_t myQueue;
 }
 
 @synthesize exceptionId;
@@ -39,6 +41,9 @@
     [self.webView.superview setOpaque:NO];
     self.webView.backgroundColor = [UIColor clearColor];
     [self.webView setOpaque:NO];
+    
+    // init myQueue
+    myQueue = dispatch_queue_create("My Queue",NULL);
 //
 //    [self.webView setNeedsDisplay];
 //    [self.webView setNeedsLayout];
@@ -94,14 +99,13 @@
 //    NSData *imageData = UIImagePNGRepresentation(myImg);
     
     // scale the image in half (cause it's fucking huge)
-    UIGraphicsBeginImageContext(CGSizeMake(myImg.size.width/1.5, myImg.size.height/1.5));
-    [myImg drawInRect:CGRectMake(0, 0, myImg.size.width/1.5, myImg.size.height/1.5)];
+    UIGraphicsBeginImageContext(CGSizeMake(myImg.size.width/2, myImg.size.height/2));
+    [myImg drawInRect:CGRectMake(0, 0, myImg.size.width/2, myImg.size.height/2)];
     UIImage* newImg = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
     NSData *imageData = UIImagePNGRepresentation(newImg);
     
-    dispatch_queue_t myQueue = dispatch_queue_create("My Queue",NULL);
     dispatch_async(myQueue, ^{
         NSString *encodedString = [imageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
 //        NSString *encodedString = @"test";
