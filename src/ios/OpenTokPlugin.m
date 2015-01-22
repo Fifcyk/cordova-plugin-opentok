@@ -340,6 +340,12 @@
 - (void)subscribe:(CDVInvokedUrlCommand*)command{
     NSLog(@"iOS subscribing to stream");
     
+    // see if this fixes speaker?
+    UInt32 audioRouteOverride = kAudioSessionOverrideAudioRoute_Speaker;
+    AudioSessionSetProperty(kAudioSessionProperty_OverrideAudioRoute, sizeof(audioRouteOverride), &audioRouteOverride);
+    [[AVAudioSession sharedInstance] setActive:YES error:nil];
+    // see if this fixes speaker issue?
+    
     // Get Parameters
     NSString* sid = [command.arguments objectAtIndex:0];
     
