@@ -237,13 +237,21 @@
     int width = [[command.arguments objectAtIndex:3] intValue];
     int height = [[command.arguments objectAtIndex:4] intValue];
     int zIndex = [[command.arguments objectAtIndex:5] intValue];
+    
+    NSLog(@"updateView() called");
+    NSLog(sid);
+    
     if ([sid isEqualToString:@"TBPublisher"]) {
         NSLog(@"The Width is: %d", width);
         CGRect frame = self.webView.frame;
         _publisher.view.frame = frame;
+        
 //        _publisher.view.frame = CGRectMake(left, top, width, height);
 //        [_publisher.view setFrame:CGRectMake(left, top, width, height)];
 //        _publisher.view.layer.zPosition = zIndex;
+    } else {
+        CGRect frame = self.webView.frame;
+        sub.view.frame = frame;
     }
     
     // Pulls the subscriber object from dictionary to prepare it for update
