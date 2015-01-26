@@ -42,6 +42,12 @@
     self.webView.backgroundColor = [UIColor clearColor];
     [self.webView setOpaque:NO];
     
+    // see if this fixes speaker?
+    UInt32 audioRouteOverride = kAudioSessionOverrideAudioRoute_Speaker;
+    AudioSessionSetProperty(kAudioSessionProperty_OverrideAudioRoute, sizeof(audioRouteOverride), &audioRouteOverride);
+    [[AVAudioSession sharedInstance] setActive:YES error:nil];
+    // see if this fixes speaker issue?
+    
     // init myQueue
     myQueue = dispatch_queue_create("My Queue",NULL);
 //
@@ -85,39 +91,34 @@
 -(void) getImgData:(CDVInvokedUrlCommand*)command {
     NSLog(@"getImgData()");
     
-    UIImage *myImg;
     NSString *type = [command.arguments objectAtIndex:0];
     
-    NSLog(@"type is:");
-    NSLog(type);
+    UIImage *myImg;
     
     if([type isEqualToString:@"subscriber"]) {
         myImg = [sub.view toImage];
     } else {
         myImg = [_publisher.view toImage];
     }
-//    NSData *imageData = UIImagePNGRepresentation(myImg);
     
-    // scale the image in half (cause it's fucking huge)
-    UIGraphicsBeginImageContext(CGSizeMake(myImg.size.width/2, myImg.size.height/2));
-    [myImg drawInRect:CGRectMake(0, 0, myImg.size.width/2, myImg.size.height/2)];
+    // create it in a new context, because using it directly eats memory for some reason..
+    UIGraphicsBeginImageContext(CGSizeMake(myImg.size.width, myImg.size.height));
+    [myImg drawInRect:CGRectMake(0, 0, myImg.size.width, myImg.size.height)];
     UIImage* newImg = UIGraphicsGetImageFromCurrentImageContext();
     UIGraphicsEndImageContext();
     
-    NSData *imageData = UIImagePNGRepresentation(newImg);
-    
     dispatch_async(myQueue, ^{
-        NSString *encodedString = [imageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
-//        NSString *encodedString = @"test";
+        @autoreleasepool {
+            NSData *imageData = UIImagePNGRepresentation(newImg);
+//            NSData *imageData = UIImagePNGRepresentation(myImg);
+            NSString *encodedString = [imageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
         
-//        NSLog(@"My encoded image:");
-//        NSLog(encodedString);
-        
-        dispatch_async(dispatch_get_main_queue(), ^{
-            // Return to Javascript
-            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:encodedString];
-            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-        });
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // Return to Javascript
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:encodedString];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            });
+        }
     });
     
 }
@@ -347,12 +348,6 @@
 // Called by session.subscribe(streamId, top, left)
 - (void)subscribe:(CDVInvokedUrlCommand*)command{
     NSLog(@"iOS subscribing to stream");
-    
-    // see if this fixes speaker?
-    UInt32 audioRouteOverride = kAudioSessionOverrideAudioRoute_Speaker;
-    AudioSessionSetProperty(kAudioSessionProperty_OverrideAudioRoute, sizeof(audioRouteOverride), &audioRouteOverride);
-    [[AVAudioSession sharedInstance] setActive:YES error:nil];
-    // see if this fixes speaker issue?
     
     // Get Parameters
     NSString* sid = [command.arguments objectAtIndex:0];
