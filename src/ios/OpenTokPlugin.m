@@ -19,11 +19,15 @@
     NSMutableDictionary *connectionDictionary;
     NSMutableDictionary *streamDictionary;
     NSMutableDictionary *callbackList;
-
-   // VideoView *videoView;
-    BOOL videoPlaying;
     
     MyAudioDevice* _myAudioDevice;
+    
+    // videoView stuff
+    AVCaptureSession* captureSession;
+    AVCaptureVideoPreviewLayer* previewLayer;
+    AVCaptureDevice* captureDevice;
+    AVCaptureDeviceInput* previousInput;
+    BOOL videoPlaying;
     
     dispatch_queue_t myQueue;
 }
@@ -48,12 +52,6 @@
     _myAudioDevice = [[MyAudioDevice alloc] init];
     [OTAudioDeviceManager setAudioDevice:_myAudioDevice];
     
-    // see if this fixes speaker?
-//    UInt32 audioRouteOverride = kAudioSessionOverrideAudioRoute_Speaker;
-//    AudioSessionSetProperty(kAudioSessionProperty_OverrideAudioRoute, sizeof(audioRouteOverride), &audioRouteOverride);
-//    [[AVAudioSession sharedInstance] setActive:YES error:nil];
-    // see if this fixes speaker issue?
-    
     // init myQueue
     myQueue = dispatch_queue_create("My Queue",NULL);
     
@@ -63,28 +61,61 @@
 -(void) startVideo:(CDVInvokedUrlCommand*)command {
     NSLog(@"startVideo()");
     
-   // videoPlaying = NO;
-   // NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
-   // for (CALayer *layer in sublayers) {
-   //     if([layer.name isEqualToString:@"VideoView"]) {
-   //         videoPlaying = YES;
-   //     }
-   // }
-   
-   // if(videoPlaying == NO) {
-   //     videoView = [[VideoView alloc] init];
-   //     [videoView getVideo:self.webView];
-   // }
+    videoPlaying = NO;
+    
+    NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
+    for (CALayer *layer in sublayers) {
+        if([layer.name isEqualToString:@"VideoView"]) {
+            videoPlaying = YES;
+        }
+    }
+    
+    if(videoPlaying == NO) {
+    
+        NSArray* devices = [AVCaptureDevice devices];
+
+        for (AVCaptureDevice *device in devices) {
+            if([device position] == AVCaptureDevicePositionBack) {
+                captureDevice = [AVCaptureDevice deviceWithUniqueID:device.uniqueID];
+            }
+        }
+        
+        if (captureDevice != nil) {
+            
+            previousInput = [[AVCaptureDeviceInput alloc] initWithDevice:captureDevice error: nil];
+            
+            captureSession = [[AVCaptureSession alloc] init];
+            [captureSession addInput:previousInput];
+            
+            previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:captureSession];
+            previewLayer.name = @"VideoView";
+            [self.webView.layer insertSublayer:previewLayer atIndex:0];
+            previewLayer.frame = self.webView.layer.frame;
+            
+            CGRect bounds = self.webView.layer.bounds;
+            previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+            previewLayer.bounds = bounds;
+            previewLayer.position = CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds));
+            
+            [captureSession startRunning];
+            
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId]; 
+        }
+        
+    }
+    
 }
 
 -(void) stopVideo:(CDVInvokedUrlCommand*)command {
     NSLog(@"stopVideo()");
-    // NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
-    // for (CALayer *layer in sublayers) {
-    //     if([layer.name isEqualToString:@"VideoView"]) {
-    //         [layer removeFromSuperlayer];
-    //     }
-    // }
+     NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
+     for (CALayer *layer in sublayers) {
+         if([layer.name isEqualToString:@"VideoView"]) {
+             [layer removeFromSuperlayer];
+             [captureSession removeInput:previousInput];
+         }
+     }
     
 }
 
