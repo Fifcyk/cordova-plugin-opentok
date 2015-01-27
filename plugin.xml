@@ -46,11 +46,11 @@
       <header-file src="src/ios/MyAudioDevice.h" />
       <header-file src="src/ios/UIView+JTViewToImage.h" />
       <header-file src="src/ios/OpenTokPlugin.h" />
-      <header-file src="src/ios/Rollerr-Bridging-Header.h" />
+      <!-- <header-file src="src/ios/Rollerr-Bridging-Header.h" /> -->
       <source-file src="src/ios/MyAudioDevice.m" />
       <source-file src="src/ios/UIView+JTViewToImage.m" />
       <source-file src="src/ios/OpenTokPlugin.m" />
-      <source-file src="src/ios/VideoView.swift" />
+      <!-- <source-file src="src/ios/VideoView.swift" /> -->
 
       <framework src="src/ios/Opentok.framework" custom="true" />
       <framework src="Foundation.framework" />
@@ -76,10 +76,10 @@
               <param name="ios-package" value="OpenTokPlugin"/>
           </feature>
 
-          <feature name="Video">
-            <param name="ios-package" value="Video" /><!-- Or just "Echo" if using the objc() prefix -->
+          <!-- <feature name="Video">
+            <param name="ios-package" value="Video" />
             <param name="onload" value="true" />
-          </feature>
+          </feature> -->
       </config-file>
       <config-file target="config.xml" parent="/*">
         <access origin="*" />
