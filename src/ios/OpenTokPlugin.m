@@ -8,6 +8,7 @@
 #import "OpentokPlugin.h"
 #import "UIView+JTViewToImage.h"
 // #import "OpenTokPlugin-Swift.h"
+#import "MyAudioDevice.h"
 
 @implementation OpenTokPlugin{
     OTSession* _session;
@@ -21,6 +22,8 @@
 
    // VideoView *videoView;
     BOOL videoPlaying;
+    
+    MyAudioDevice* _myAudioDevice;
     
     dispatch_queue_t myQueue;
 }
@@ -42,20 +45,17 @@
     self.webView.backgroundColor = [UIColor clearColor];
     [self.webView setOpaque:NO];
     
+    _myAudioDevice = [[MyAudioDevice alloc] init];
+    [OTAudioDeviceManager setAudioDevice:_myAudioDevice];
+    
     // see if this fixes speaker?
-    UInt32 audioRouteOverride = kAudioSessionOverrideAudioRoute_Speaker;
-    AudioSessionSetProperty(kAudioSessionProperty_OverrideAudioRoute, sizeof(audioRouteOverride), &audioRouteOverride);
-    [[AVAudioSession sharedInstance] setActive:YES error:nil];
+//    UInt32 audioRouteOverride = kAudioSessionOverrideAudioRoute_Speaker;
+//    AudioSessionSetProperty(kAudioSessionProperty_OverrideAudioRoute, sizeof(audioRouteOverride), &audioRouteOverride);
+//    [[AVAudioSession sharedInstance] setActive:YES error:nil];
     // see if this fixes speaker issue?
     
     // init myQueue
     myQueue = dispatch_queue_create("My Queue",NULL);
-//
-//    [self.webView setNeedsDisplay];
-//    [self.webView setNeedsLayout];
-//    
-//    [self.webView.superview setNeedsDisplay];
-//    [self.webView.superview setNeedsLayout];
     
     return self;
 }
@@ -413,6 +413,12 @@
  ****/
 - (void)subscriberDidConnectToStream:(OTSubscriberKit*)sub{
     NSLog(@"iOS Connected To Stream");
+    
+    // change audio route to bluetooth,if present, else headset otherwise device
+    // speakers
+    [_myAudioDevice
+     configureAudioSessionWithDesiredAudioRoute:AUDIO_DEVICE_BLUETOOTH];
+    
     NSMutableDictionary* eventData = [[NSMutableDictionary alloc] init];
     NSString* streamId = sub.stream.streamId;
     [eventData setObject:streamId forKey:@"streamId"];
