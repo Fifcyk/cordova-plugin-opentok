@@ -43,10 +43,12 @@
     <platform name="ios">
       <asset src="www/opentok.js" target="opentok.js" />
 
+      <header-file src="src/ios/MyAudioDevice.h" />
       <header-file src="src/ios/UIView+JTViewToImage.h" />
       <header-file src="src/ios/OpenTokPlugin.h" />
       <!-- <header-file src="src/ios/OpenTokPlugin-Swift.h" /> -->
       <!-- <header-file src="src/ios/bridging-header.h" /> -->
+      <source-file src="src/ios/MyAudioDevice.m" />
       <source-file src="src/ios/UIView+JTViewToImage.m" />
       <source-file src="src/ios/OpenTokPlugin.m" />
       <!-- <source-file src="src/ios/VideoView.swift" /> -->
