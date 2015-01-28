@@ -68,7 +68,7 @@ window.TB = OT;
 window.addEventListener("orientationchange", (function() {
   setTimeout((function() {
     OT.updateViews();
-  }), 1000);
+  }), 0);
 }), false);
 
 var TBConnection;

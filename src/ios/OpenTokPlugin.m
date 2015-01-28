@@ -39,12 +39,12 @@
     
     theWebView.backgroundColor = [UIColor clearColor];
     [theWebView setOpaque:NO];
-    theWebView.superview.backgroundColor = [UIColor whiteColor];
+    theWebView.superview.backgroundColor = [UIColor blackColor];
     [theWebView.superview setOpaque:NO];
     
     self = (OpenTokPlugin*)[super initWithWebView:theWebView];
     
-    self.webView.superview.backgroundColor = [UIColor whiteColor];
+    self.webView.superview.backgroundColor = [UIColor blackColor];
     [self.webView.superview setOpaque:NO];
     self.webView.backgroundColor = [UIColor clearColor];
     [self.webView setOpaque:NO];
