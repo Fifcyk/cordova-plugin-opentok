@@ -49,9 +49,6 @@
     self.webView.backgroundColor = [UIColor clearColor];
     [self.webView setOpaque:NO];
     
-    _myAudioDevice = [[MyAudioDevice alloc] init];
-    [OTAudioDeviceManager setAudioDevice:_myAudioDevice];
-    
     // init myQueue
     myQueue = dispatch_queue_create("My Queue",NULL);
     
@@ -194,6 +191,11 @@
 //    VideoView *videoView = [[VideoView alloc] init];
 //    [videoView stopRunning];
 //    NSLog(@"subviews count: %@ ", self.webView.layer);
+    
+    //    if([[OTAudioDeviceManager currentAudioDevice] isKindOfClass:[MyAudioDevice class]]) {
+    _myAudioDevice = [[MyAudioDevice alloc] init];
+    [OTAudioDeviceManager setAudioDevice:_myAudioDevice];
+    //    }
     
     // Get Parameters
     NSString* apiKey = [command.arguments objectAtIndex:0];
@@ -445,9 +447,10 @@
 - (void)subscriberDidConnectToStream:(OTSubscriberKit*)sub{
     NSLog(@"iOS Connected To Stream");
     
-    NSLog(@"Strem has audio?");
+    NSLog(@"Stream has audio?");
+    NSLog(sub.stream.hasAudio == YES ? @"YES":@"NO");
     
-    if(sub.stream.hasAudio) {
+    if(sub.stream.hasAudio == YES) {
         // change audio route to bluetooth,if present, else headset otherwise device
         // speakers
         [_myAudioDevice
