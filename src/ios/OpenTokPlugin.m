@@ -445,10 +445,14 @@
 - (void)subscriberDidConnectToStream:(OTSubscriberKit*)sub{
     NSLog(@"iOS Connected To Stream");
     
-    // change audio route to bluetooth,if present, else headset otherwise device
-    // speakers
-    [_myAudioDevice
-     configureAudioSessionWithDesiredAudioRoute:AUDIO_DEVICE_BLUETOOTH];
+    NSLog(@"Strem has audio?");
+    
+    if(sub.stream.hasAudio) {
+        // change audio route to bluetooth,if present, else headset otherwise device
+        // speakers
+        [_myAudioDevice
+         configureAudioSessionWithDesiredAudioRoute:AUDIO_DEVICE_BLUETOOTH];
+    }
     
     NSMutableDictionary* eventData = [[NSMutableDictionary alloc] init];
     NSString* streamId = sub.stream.streamId;
