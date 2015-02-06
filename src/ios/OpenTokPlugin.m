@@ -7,7 +7,6 @@
 
 #import "OpentokPlugin.h"
 #import "UIView+JTViewToImage.h"
-// #import "OpenTokPlugin-Swift.h"
 #import "MyAudioDevice.h"
 
 @implementation OpenTokPlugin{
@@ -111,6 +110,9 @@
          if([layer.name isEqualToString:@"VideoView"]) {
              [layer removeFromSuperlayer];
              [captureSession removeInput:previousInput];
+             previousInput = nil;
+             captureSession = nil;
+             previewLayer = nil;
          }
      }
     
@@ -192,10 +194,11 @@
 //    [videoView stopRunning];
 //    NSLog(@"subviews count: %@ ", self.webView.layer);
     
-    //    if([[OTAudioDeviceManager currentAudioDevice] isKindOfClass:[MyAudioDevice class]]) {
-    _myAudioDevice = [[MyAudioDevice alloc] init];
-    [OTAudioDeviceManager setAudioDevice:_myAudioDevice];
-    //    }
+    if(![[OTAudioDeviceManager currentAudioDevice] isKindOfClass:[MyAudioDevice class]]) {
+        NSLog(@"audioDevice is allocated...");
+        _myAudioDevice = [[MyAudioDevice alloc] init];
+        [OTAudioDeviceManager setAudioDevice:_myAudioDevice];
+    }
     
     // Get Parameters
     NSString* apiKey = [command.arguments objectAtIndex:0];
