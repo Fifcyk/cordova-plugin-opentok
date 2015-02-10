@@ -7,6 +7,7 @@
 
 #import "OpentokPlugin.h"
 #import "UIView+JTViewToImage.h"
+// #import "OpenTokPlugin-Swift.h"
 #import "MyAudioDevice.h"
 
 @implementation OpenTokPlugin{
@@ -190,12 +191,8 @@
 
 // Called by TB.initsession()
 -(void)initSession:(CDVInvokedUrlCommand*)command{
-//    VideoView *videoView = [[VideoView alloc] init];
-//    [videoView stopRunning];
-//    NSLog(@"subviews count: %@ ", self.webView.layer);
     
     if(![[OTAudioDeviceManager currentAudioDevice] isKindOfClass:[MyAudioDevice class]]) {
-        NSLog(@"audioDevice is allocated...");
         _myAudioDevice = [[MyAudioDevice alloc] init];
         [OTAudioDeviceManager setAudioDevice:_myAudioDevice];
     }
