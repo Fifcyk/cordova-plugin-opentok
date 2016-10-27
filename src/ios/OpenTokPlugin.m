@@ -6,18 +6,167 @@
 //
 
 #import "OpentokPlugin.h"
+#import "UIView+JTViewToImage.h"
+// #import "OpenTokPlugin-Swift.h"
+#import "MyAudioDevice.h"
 
 @implementation OpenTokPlugin{
     OTSession* _session;
     OTPublisher* _publisher;
     OTSubscriber* _subscriber;
+    OTSubscriber* sub;
     NSMutableDictionary *subscriberDictionary;
     NSMutableDictionary *connectionDictionary;
     NSMutableDictionary *streamDictionary;
     NSMutableDictionary *callbackList;
+    
+    MyAudioDevice* _myAudioDevice;
+    
+    // videoView stuff
+    AVCaptureSession* captureSession;
+    AVCaptureVideoPreviewLayer* previewLayer;
+    AVCaptureDevice* captureDevice;
+    AVCaptureDeviceInput* previousInput;
+    BOOL videoPlaying;
+    
+    dispatch_queue_t myQueue;
 }
 
 @synthesize exceptionId;
+
+// Added by Devin Andrews
+-(CDVPlugin*) initWithWebView:(UIWebView *)theWebView {
+    
+    theWebView.backgroundColor = [UIColor clearColor];
+    [theWebView setOpaque:NO];
+    theWebView.superview.backgroundColor = [UIColor blackColor];
+    [theWebView.superview setOpaque:NO];
+    
+    self = (OpenTokPlugin*)[super initWithWebView:theWebView];
+    
+    self.webView.superview.backgroundColor = [UIColor blackColor];
+    [self.webView.superview setOpaque:NO];
+    self.webView.backgroundColor = [UIColor clearColor];
+    [self.webView setOpaque:NO];
+    
+    // init myQueue
+    myQueue = dispatch_queue_create("My Queue",NULL);
+    
+    return self;
+}
+
+-(void) startVideo:(CDVInvokedUrlCommand*)command {
+    NSLog(@"startVideo()");
+    
+    videoPlaying = NO;
+    
+    NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
+    for (CALayer *layer in sublayers) {
+        if([layer.name isEqualToString:@"VideoView"]) {
+            videoPlaying = YES;
+        }
+    }
+    
+    if(videoPlaying == NO) {
+    
+        NSArray* devices = [AVCaptureDevice devices];
+
+        for (AVCaptureDevice *device in devices) {
+            if([device position] == AVCaptureDevicePositionBack) {
+                captureDevice = [AVCaptureDevice deviceWithUniqueID:device.uniqueID];
+            }
+        }
+        
+        if (captureDevice != nil) {
+            
+            previousInput = [[AVCaptureDeviceInput alloc] initWithDevice:captureDevice error: nil];
+            
+            captureSession = [[AVCaptureSession alloc] init];
+            [captureSession addInput:previousInput];
+            
+            previewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:captureSession];
+            previewLayer.name = @"VideoView";
+            [self.webView.layer insertSublayer:previewLayer atIndex:0];
+            previewLayer.frame = self.webView.layer.frame;
+            
+            CGRect bounds = self.webView.layer.bounds;
+            previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
+            previewLayer.bounds = bounds;
+            previewLayer.position = CGPointMake(CGRectGetMidX(bounds), CGRectGetMidY(bounds));
+            
+            [captureSession startRunning];
+            
+            CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+            [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId]; 
+        }
+        
+    }
+    
+}
+
+-(void) stopVideo:(CDVInvokedUrlCommand*)command {
+    NSLog(@"stopVideo()");
+     NSArray* sublayers = [NSArray arrayWithArray:self.webView.layer.sublayers];
+     for (CALayer *layer in sublayers) {
+         if([layer.name isEqualToString:@"VideoView"]) {
+             [layer removeFromSuperlayer];
+             [captureSession removeInput:previousInput];
+             previousInput = nil;
+             captureSession = nil;
+             previewLayer = nil;
+         }
+     }
+    
+}
+
+-(void) getImgData:(CDVInvokedUrlCommand*)command {
+    NSLog(@"getImgData()");
+    
+    NSString *type = [command.arguments objectAtIndex:0];
+    
+    UIImage *myImg;
+    
+    if([type isEqualToString:@"subscriber"]) {
+        myImg = [sub.view toImage];
+    } else {
+        myImg = [_publisher.view toImage];
+    }
+    
+    // create it in a new context, because using it directly eats memory for some reason..
+    UIGraphicsBeginImageContext(CGSizeMake(myImg.size.width, myImg.size.height));
+    [myImg drawInRect:CGRectMake(0, 0, myImg.size.width, myImg.size.height)];
+    UIImage* newImg = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    dispatch_async(myQueue, ^{
+        @autoreleasepool {
+            NSData *imageData = UIImagePNGRepresentation(newImg);
+//            NSData *imageData = UIImagePNGRepresentation(myImg);
+            NSString *encodedString = [imageData base64EncodedStringWithOptions:NSDataBase64Encoding64CharacterLineLength];
+        
+            dispatch_async(dispatch_get_main_queue(), ^{
+                // Return to Javascript
+                CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsString:encodedString];
+                [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+            });
+        }
+    });
+    
+}
+
+
+//- (UIImage *)imageFromLayer:(CALayer *)layer {
+//    UIGraphicsBeginImageContext([layer frame].size);
+//    
+//    [layer renderInContext:UIGraphicsGetCurrentContext()];
+//    UIImage *outputImage = UIGraphicsGetImageFromCurrentImageContext();
+//    
+//    UIGraphicsEndImageContext();
+//    
+//    return outputImage;
+//}
+
+// end added by Devin Andrews
 
 #pragma mark -
 #pragma mark Cordova Methods
@@ -42,6 +191,12 @@
 
 // Called by TB.initsession()
 -(void)initSession:(CDVInvokedUrlCommand*)command{
+    
+    if(![[OTAudioDeviceManager currentAudioDevice] isKindOfClass:[MyAudioDevice class]]) {
+        _myAudioDevice = [[MyAudioDevice alloc] init];
+        [OTAudioDeviceManager setAudioDevice:_myAudioDevice];
+    }
+    
     // Get Parameters
     NSString* apiKey = [command.arguments objectAtIndex:0];
     NSString* sessionId = [command.arguments objectAtIndex:1];
@@ -86,8 +241,15 @@
     _publisher = [[OTPublisher alloc] initWithDelegate:self name:name];
     [_publisher setPublishAudio:bpubAudio];
     [_publisher setPublishVideo:bpubVideo];
-    [self.webView.superview addSubview:_publisher.view];
+    
     [_publisher.view setFrame:CGRectMake(left, top, width, height)];
+    
+//        [self.webView.superview addSubview:_publisher.view];
+    [self.webView.superview insertSubview:_publisher.view atIndex:0];
+    self.webView.layer.zPosition = 3;
+    
+
+    
     if (zIndex>0) {
         _publisher.view.layer.zPosition = zIndex;
     }
@@ -109,20 +271,31 @@
     int width = [[command.arguments objectAtIndex:3] intValue];
     int height = [[command.arguments objectAtIndex:4] intValue];
     int zIndex = [[command.arguments objectAtIndex:5] intValue];
+    
+    NSLog(@"updateView() called");
+    NSLog(sid);
+    
     if ([sid isEqualToString:@"TBPublisher"]) {
         NSLog(@"The Width is: %d", width);
-        _publisher.view.frame = CGRectMake(left, top, width, height);
-        _publisher.view.layer.zPosition = zIndex;
+        CGRect frame = self.webView.frame;
+        _publisher.view.frame = frame;
+        
+//        _publisher.view.frame = CGRectMake(left, top, width, height);
+//        [_publisher.view setFrame:CGRectMake(left, top, width, height)];
+//        _publisher.view.layer.zPosition = zIndex;
+    } else {
+        CGRect frame = self.webView.frame;
+        sub.view.frame = frame;
     }
     
     // Pulls the subscriber object from dictionary to prepare it for update
-    OTSubscriber* streamInfo = [subscriberDictionary objectForKey:sid];
-    
-    if (streamInfo) {
-        // Reposition the video feeds!
-        streamInfo.view.frame = CGRectMake(left, top, width, height);
-        streamInfo.view.layer.zPosition = zIndex;
-    }
+//    OTSubscriber* streamInfo = [subscriberDictionary objectForKey:sid];
+//    
+//    if (streamInfo) {
+//        // Reposition the video feeds!
+//        streamInfo.view.frame = CGRectMake(left, top, width, height);
+//        streamInfo.view.layer.zPosition = zIndex;
+//    }
     
     CDVPluginResult* callbackResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
     [callbackResult setKeepCallbackAsBool:YES];
@@ -221,7 +394,8 @@
     
     // Acquire Stream, then create a subscriber object and put it into dictionary
     OTStream* myStream = [streamDictionary objectForKey:sid];
-    OTSubscriber* sub = [[OTSubscriber alloc] initWithStream:myStream delegate:self];
+//    OTSubscriber* sub = [[OTSubscriber alloc] initWithStream:myStream delegate:self];
+    sub = [[OTSubscriber alloc] initWithStream:myStream delegate:self];
     [_session subscribe:sub error:nil];
     
     if ([[command.arguments objectAtIndex:6] isEqualToString:@"false"]) {
@@ -236,7 +410,9 @@
     if (zIndex>0) {
         sub.view.layer.zPosition = zIndex;
     }
-    [self.webView.superview addSubview:sub.view];
+//    [self.webView.superview addSubview:sub.view];
+    [self.webView.superview insertSubview:sub.view atIndex:0];
+    self.webView.layer.zPosition = 3;
     
     // Return to JS event handler
     CDVPluginResult* pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
@@ -270,6 +446,17 @@
  ****/
 - (void)subscriberDidConnectToStream:(OTSubscriberKit*)sub{
     NSLog(@"iOS Connected To Stream");
+    
+    NSLog(@"Stream has audio?");
+    NSLog(sub.stream.hasAudio == YES ? @"YES":@"NO");
+    
+    if(sub.stream.hasAudio == YES) {
+        // change audio route to bluetooth,if present, else headset otherwise device
+        // speakers
+        [_myAudioDevice
+         configureAudioSessionWithDesiredAudioRoute:AUDIO_DEVICE_BLUETOOTH];
+    }
+    
     NSMutableDictionary* eventData = [[NSMutableDictionary alloc] init];
     NSString* streamId = sub.stream.streamId;
     [eventData setObject:streamId forKey:@"streamId"];

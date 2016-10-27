@@ -47,19 +47,6 @@ window.OT = {
   },
   removeEventListener: function(type, handler) {
     return this.off(type, handler);
-  },
-  startVideo: function (success) {
-    return Cordova.exec(success, TBError, OTPlugin, "startVideo", []);
-  },
-  stopVideo: function (success) {
-    return Cordova.exec(success, TBError, OTPlugin, "stopVideo", []);
-  },
-  getImgData: function (type, success) {
-    if(typeof type !== 'string') {
-      success = type;
-      type = '';
-    }
-    return Cordova.exec(success, TBError, OTPlugin, "getImgData", [type]);
   }
 };
 
@@ -68,7 +55,7 @@ window.TB = OT;
 window.addEventListener("orientationchange", (function() {
   setTimeout((function() {
     OT.updateViews();
-  }), 0);
+  }), 1000);
 }), false);
 
 var TBConnection;
@@ -614,7 +601,7 @@ TBSession = (function() {
     element = streamElements[elementId];
     if (element) {
       element.parentNode.removeChild(element);
-      delete streamElements[subscriber.streamId];
+      delete streamElements[streamId];
       TBUpdateObjects();
     }
     return Cordova.exec(TBSuccess, TBError, OTPlugin, "unsubscribe", [subscriber.streamId]);

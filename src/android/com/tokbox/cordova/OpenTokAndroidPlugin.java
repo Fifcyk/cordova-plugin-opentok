@@ -34,6 +34,14 @@ import com.opentok.android.Stream.StreamVideoType;
 import com.opentok.android.Subscriber;
 import com.opentok.android.SubscriberKit;
 
+import android.graphics.Color;
+import android.util.DisplayMetrics;
+import android.view.WindowManager;
+import android.view.Display;
+import android.widget.RelativeLayout;
+
+// import com.rollerr.videoview.VideoView;
+
 
 public class OpenTokAndroidPlugin extends CordovaPlugin implements 
   Session.SessionListener, Session.ConnectionListener, Session.SignalListener, 
@@ -64,6 +72,10 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
     public class CustomComparator implements Comparator<RunnableUpdateViews> {
       @Override
         public int compare(RunnableUpdateViews object1, RunnableUpdateViews object2) {
+        Log.d(TAG, "CustomComparator begin:");
+        Log.d(TAG, object1.toString());
+        Log.d(TAG, object2.toString());
+        Log.d(TAG, "CustomComparator end;");
           return object2.getZIndex() - object1.getZIndex();
         }
     }
@@ -77,14 +89,43 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
         allStreamViews.add( myPublisher ); 
       }
       Collections.sort( allStreamViews, new CustomComparator() );
-
+      
+      Log.d(TAG, "updateZIndeces()");
+      Log.d(TAG, allStreamViews.toString());
+      
       for( RunnableUpdateViews viewContainer : allStreamViews ){
         ViewGroup parent = (ViewGroup) cordova.getActivity().findViewById(android.R.id.content);
+        
+        RelativeLayout layout = new RelativeLayout(cordova.getActivity().getApplicationContext());
+        parent.addView(layout, 0);
+        
         if (null != parent) {
+          Log.d(TAG, "Parent exists:");
+          Log.d(TAG, parent.toString());
+          Log.d(TAG, viewContainer.mView.toString());
+          Log.d(TAG, "parent exists end;");
           parent.removeView( viewContainer.mView );
-          parent.addView(viewContainer.mView );
+          parent.addView(viewContainer.mView, 1 );
+//          layout.removeView(viewContainer.mView);
+//          layout.addView(viewContainer.mView, 0);
         }
+        
+        Log.d(TAG, parent.toString());
+        Log.d(TAG, parent.getChildAt(0).toString());
+        Log.d(TAG, parent.getChildAt(1).toString());
+        Log.d(TAG, parent.getChildAt(2).toString());
+        
+//        layout.setBackgroundColor(0x00000000);
+//        layout.getChildAt(1).setBackgroundColor(0x00000000);
+        parent.setBackgroundColor(0x00000000);
+        parent.getChildAt(2).setBackgroundColor(0x00000000);
+        
+        Log.d(TAG, "check position in parent:");
+        Log.d(TAG, parent.getChildAt(0).toString());
+        Log.d(TAG, parent.getChildAt(1).toString());
+        Log.d(TAG, "end check parent");
       }
+      
     }
 
     public int getZIndex(){
@@ -116,12 +157,19 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
 
           widthRatio = (float) mProperty.getDouble(ratioIndex);
           heightRatio = (float) mProperty.getDouble(ratioIndex + 1);
-
-          mView.setY( mProperty.getInt(1) * heightRatio );
-          mView.setX( mProperty.getInt(2) * widthRatio );
+          
+          WindowManager wm = (WindowManager) cordova.getActivity().getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
+          Display display = wm.getDefaultDisplay();
+          int width = display.getWidth();  // deprecated
+          int height = display.getHeight();  // deprecated
+          
+//          mView.setY( mProperty.getInt(1) * heightRatio );
+//          mView.setX( mProperty.getInt(2) * widthRatio );
           ViewGroup.LayoutParams params = mView.getLayoutParams();
-          params.height = (int) (mProperty.getInt(4) * heightRatio);
-          params.width = (int) (mProperty.getInt(3) * widthRatio);
+//          params.height = (int) (mProperty.getInt(4) * heightRatio);
+//          params.width = (int) (mProperty.getInt(3) * widthRatio);
+          params.height = (int) height;
+          params.width = (int) width;
           mView.setLayoutParams(params);
           updateZIndices();
         }catch( Exception e ){
@@ -157,10 +205,23 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
 
 
     public void destroyPublisher(){
+      if(this.mPublisher==null) return;
       ViewGroup parent = (ViewGroup) cordova.getActivity().findViewById(android.R.id.content);
         parent.removeView( this.mView );
-        this.mPublisher.destroy();
+        try {
+          this.mPublisher.destroy(); //crashes
+        } catch(Exception e) {
+          Log.d(TAG, "Error on mPublisher.destroy(): " + e.toString());
+        }
         this.mPublisher = null;
+        
+        try {
+      CordovaWebView myWebView = (CordovaWebView) viewList.get("mainView");
+      myWebView.setBackgroundColor(Color.parseColor("#FFFFFF")); //back to white
+    } catch (JSONException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     }
     
     public void run() {
@@ -177,6 +238,26 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
         mPublisher = new Publisher(cordova.getActivity().getApplicationContext(), publisherName);
         mPublisher.setCameraListener(this);
         mPublisher.setPublisherListener(this);
+        
+        try {
+      CordovaWebView myWebView = (CordovaWebView) viewList.get("mainView");
+      myWebView.setBackgroundColor(0x00000000); //transparent webview
+    } catch (JSONException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+        
+        try{
+          if( compareStrings(this.mProperty.getString(8), "back") ){
+            Log.i(TAG, "swapping camer"
+                + ""
+                + "a");
+            mPublisher.swapCamera(); // default is front
+          }
+        }catch(Exception e){
+          Log.i(TAG, "error when trying to retrieve cameraName property");
+        }
+
         try{
           // Camera is swapped in streamCreated event
           if( compareStrings(this.mProperty.getString(7), "false") ){
@@ -190,7 +271,16 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
           Log.i(TAG, "error when trying to retrieve publish audio/video property");
         }
         this.mView = mPublisher.getView();
-        frame.addView( this.mView );
+        
+        Log.d(TAG, "Well?");
+        Log.d(TAG, frame.toString());
+        Log.d(TAG, new Integer(frame.getChildCount()).toString());
+        frame.addView( this.mView, 0 );
+        
+        Log.d(TAG, new Integer(frame.getChildCount()).toString());
+        
+        Log.d(TAG, frame.getChildAt(0).toString());
+//        Log.d(TAG, frame.getChildAt(1).toString());
         mSession.publish(mPublisher);
       }
       super.run();
@@ -206,14 +296,16 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
     @Override
     public void onStreamCreated(PublisherKit arg0, Stream arg1) {
       Log.i(TAG, "publisher stream received");
-      try{
-        if( compareStrings(this.mProperty.getString(8), "back") ){
-          Log.i(TAG, "swapping camera");
-          mPublisher.swapCamera(); // default is front
-        }
-      }catch(Exception e){
-        Log.i(TAG, "error when trying to retrieve cameraName property");
-      }
+      // Edited by Devin Andrews
+      // We want the stream to initialize with this value
+      // try{
+      //   if( compareStrings(this.mProperty.getString(8), "back") ){
+      //     Log.i(TAG, "swapping camera");
+      //     mPublisher.swapCamera(); // default is front
+      //   }
+      // }catch(Exception e){
+      //   Log.i(TAG, "error when trying to retrieve cameraName property");
+      // }
       streamCollection.put(arg1.getStreamId(), arg1);
       triggerStreamCreated( arg1, "publisherEvents");
     }
@@ -258,19 +350,36 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
       ViewGroup frame = (ViewGroup) cordova.getActivity().findViewById(android.R.id.content);
       frame.removeView( this.mView );
       mSubscriber.destroy();
+      
+      Log.d(TAG, "removeStreamView()");
+      try {
+      CordovaWebView myWebView = (CordovaWebView) viewList.get("mainView");
+      myWebView.setBackgroundColor(Color.parseColor("#FFFFFF")); //back to white
+    } catch (JSONException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
     }
 
     public void run() {
       if( mSubscriber == null ){
+      try {
+        CordovaWebView myWebView = (CordovaWebView) viewList.get("mainView");
+        myWebView.setBackgroundColor(0x00000000); //transparent webview
+      } catch (JSONException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
         logMessage("NEW SUBSCRIBER BEING CREATED");
         mSubscriber = new Subscriber(cordova.getActivity(), mStream);
         mSubscriber.setVideoListener(this);
         mSubscriber.setSubscriberListener(this);
         ViewGroup frame = (ViewGroup) cordova.getActivity().findViewById(android.R.id.content);
         this.mView = mSubscriber.getView();
-        frame.addView( this.mView );
+        frame.addView( this.mView, 0 );
         mSession.subscribe(mSubscriber);
         Log.i(TAG, "subscriber view is added to parent view!");
+        
       }
       super.run();
     }
@@ -360,7 +469,13 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
           Log.e(TAG, "Critical error. Failed to retrieve Cordova's view");
         }
       }
-
+      Log.d(TAG, "So yeah:");
+      Log.d(TAG, webView.toString());
+      Log.d(TAG, webView.getParent().toString());
+      Log.d(TAG, webView.getParent().getParent().toString());
+      
+//      webView.setBackgroundColor(0x00000000);
+      
       // set OpenTok states
       publishCalled = false;
       sessionConnected = false;
@@ -368,29 +483,42 @@ public class OpenTokAndroidPlugin extends CordovaPlugin implements
       connectionCollection = new HashMap<String, Connection>();
       streamCollection = new HashMap<String, Stream>();
       subscriberCollection = new HashMap<String, RunnableSubscriber>();
-
+      
       super.initialize(cordova, webView);
     }
 
   @Override
   public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
       Log.i( TAG, action );
+      
+      // Added by Devin Andrews
+      if(action.equals("startCamera")) {
+        Log.d(TAG, "startCamera called");
+      } else if (action.equals("stopCamera")) { 
+        Log.d(TAG, "stopCamera called");
+      }
+      // end Added by Devin Andrews
       // TB Methods
-      if( action.equals("initPublisher")){
+      else if( action.equals("initPublisher")){
         myPublisher = new RunnablePublisher( args );
       }else if( action.equals( "destroyPublisher" )){
       if( myPublisher != null ){
-         cordova.getActivity().runOnUiThread(new Runnable() {
+       cordova.getActivity().runOnUiThread(new Runnable() {
               @Override
               public void run() {
-                myPublisher.destroyPublisher();
-                myPublisher = null;
+                try {
+                  myPublisher.destroyPublisher();
+//                      myPublisher = null;
+                } catch (Exception e) {
+                  Log.d(TAG, "FUCKING EXCEPTION");
+                  Log.d(TAG, e.toString());
+                }
              }
          });
 
          callbackContext.success();
          return true;
-      }
+  }
       }else if( action.equals( "initSession" )){
         Log.i( TAG, "created new session with data: "+args.toString());
         mSession = new Session(this.cordova.getActivity().getApplicationContext(), args.getString(0), args.getString(1));

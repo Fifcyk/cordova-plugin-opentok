@@ -614,7 +614,11 @@ TBSession = (function() {
     element = streamElements[elementId];
     if (element) {
       element.parentNode.removeChild(element);
+<<<<<<< HEAD
+      delete streamElements[elementId];
+=======
       delete streamElements[subscriber.streamId];
+>>>>>>> devand123/master
       TBUpdateObjects();
     }
     return Cordova.exec(TBSuccess, TBError, OTPlugin, "unsubscribe", [subscriber.streamId]);

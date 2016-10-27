@@ -5,6 +5,7 @@
 //  Please see the LICENSE included with this distribution for details.
 //
 
+#import "AppDelegate.h"
 #import <Foundation/Foundation.h>
 #import <Cordova/CDVPlugin.h>
 #import <UIKit/UIKit.h>
@@ -16,6 +17,12 @@
 
 // Tokbox Library Functions
 - (void)addEvent:(CDVInvokedUrlCommand*)command;
+
+// Devin Andrews methods
+- (void)startVideo:(CDVInvokedUrlCommand*)command;
+- (void)stopVideo:(CDVInvokedUrlCommand*)command;
+- (void)getImgData:(CDVInvokedUrlCommand*)command;
+//- (UIImage)imageFromLayer:(CALayer*)layer;
 
 // TB
 - (void)initPublisher:(CDVInvokedUrlCommand*)command;
