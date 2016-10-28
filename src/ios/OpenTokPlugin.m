@@ -34,26 +34,6 @@
 
 @synthesize exceptionId;
 
-// Added by Devin Andrews
--(CDVPlugin*) initWithWebView:(UIWebView *)theWebView {
-    
-    theWebView.backgroundColor = [UIColor clearColor];
-    [theWebView setOpaque:NO];
-    theWebView.superview.backgroundColor = [UIColor blackColor];
-    [theWebView.superview setOpaque:NO];
-    
-    self = (OpenTokPlugin*)[super initWithWebView:theWebView];
-    
-    self.webView.superview.backgroundColor = [UIColor blackColor];
-    [self.webView.superview setOpaque:NO];
-    self.webView.backgroundColor = [UIColor clearColor];
-    [self.webView setOpaque:NO];
-    
-    // init myQueue
-    myQueue = dispatch_queue_create("My Queue",NULL);
-    
-    return self;
-}
 
 -(void) startVideo:(CDVInvokedUrlCommand*)command {
     NSLog(@"startVideo()");
@@ -172,6 +152,13 @@
 #pragma mark Cordova Methods
 -(void) pluginInitialize{
     callbackList = [[NSMutableDictionary alloc] init];
+
+    [self.webView.superview setOpaque:NO];
+    self.webView.backgroundColor = [UIColor clearColor];
+    [self.webView setOpaque:NO];
+
+    // init myQueue
+    myQueue = dispatch_queue_create("My Queue",NULL);
 }
 - (void)addEvent:(CDVInvokedUrlCommand*)command{
     NSString* event = [command.arguments objectAtIndex:0];
